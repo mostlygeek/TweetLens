@@ -1,0 +1,30 @@
+if (init.add) {
+
+init.add('ui.cluetips.js INIT',function() {
+    $.cluetip.setup({
+        cluetipClass : 'jtip'
+    });
+    
+    $(document).bind('STACKDISPLAY_PAGE',function(e,page,data) {
+        $('.twitterScreenName').each(function() {
+            var s = $(this).attr('href').substr(1); //screen name
+            var t = '/webservice/userinfo.php?i='+s; 
+            $(this)
+                .attr('rel',t)
+                .attr('href',t)
+                .attr('title',"Viewing: "+s)
+                .click(function(e){return false;})
+                .cluetip({
+                    cluetipClass : 'jtip',
+                    width: 500,
+                    sticky: true,
+                    showTitle:false,
+                    activation: 'click',
+                    closePosition: 'top', 
+                    arrows: true
+                });
+        });  
+    });
+});
+
+}

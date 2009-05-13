@@ -1,0 +1,86 @@
+/**** NAVIGATION FUNCTIONS *****/
+function moveIndex ( op ) { // returns the index of the next move.
+    if (op != 1 && op != -1)
+        return curSelected; 
+    
+    var newSelect = curSelected + op;
+    if (newSelect >= 0 && newSelect < pageStack.length)
+        return newSelect; 
+    
+    return curSelected; // don't move
+}
+function moveSelect( op ) { // move the index marker
+    var next = moveIndex(op);
+    if (next == curSelected)
+        return false; 
+    curSelected = next; 
+    addHighlight(curSelected);
+}
+function addHighlight(i) {
+    var twId = pageStack[i].id;
+    $('.twMark').css('background-color','white'); // remove all highlights
+    $('#tweet-'+twId+'>.twMark').css('background-color','red');
+}
+function scrollToCurrent() {
+        
+    var twId   = pageStack[curSelected].id; 
+    var pos    = $('#tweet-'+twId).offset();
+    var posTop = Math.round(pos.top);
+    var winTop = Math.round($(window).scrollTop());
+    var height = Math.round($(window).height());
+    var bottom = ( winTop + height); 
+    var margin = Math.round($(window).height()/12); 
+    
+    // debug("twID: "+twId + ", left: "+pos.left + ", top: "+Math.round(pos.top)+", winTop: "+winTop+" height: "+height+" posTop: "+posTop+" bottom: "+bottom+" margin: "+margin); 
+
+    if (posTop < winTop+50) { // scroll up
+        $('html,body').animate({scrollTop: (posTop-(height/2))}, 250);
+        // debug("Scrolling up");
+    }
+    if (posTop > (bottom-100)) { // scroll down
+        $('html,body').animate({scrollTop: (posTop)}, 250);
+        //debug('Scrolling Down');
+    }
+}
+
+function clickTweet( pos ) { // this is the select
+    debug("Click: "+pos);
+    curSelected = pos;
+    addHighlight(curSelected);
+}
+
+function dblClickTweet(pos) {
+    debug('double click: '+pos);
+    AJAX.updateRead();
+    toggleShow();
+    addHighlight(curSelected);
+}
+
+// Navigate between pages 
+function firstPage() {
+    updatePageNavigation();
+
+    debug('Going to First Page');
+    displayPage(1);
+}
+
+function nextPage() {
+    updatePageNavigation();
+    if (curPage == 10)
+        return false; 
+        
+    var nextPage = curPage+1;
+    debug('Going to Next Page:'+nextPage); 
+    displayPage(nextPage);
+}
+
+function prevPage() {
+    updatePageNavigation();
+
+    if (curPage == 1)
+        return false; 
+        
+    var prevPage = curPage-1;
+    debug('Going to Prev Page:'+prevPage);
+    displayPage(prevPage);
+}

@@ -1,0 +1,226 @@
+/* uses the GLOBALS for information. 
+   returns html for jquery to inject
+ */
+function formatFull( pos ) {
+    var html = "";
+    var t = pageStack[pos];  // the tweet
+
+    var u = t.user; // the user
+    var text = t.text;
+    
+    text = text.replace(/(\w+):\/\/[\S]+(\b|$)/gim,'<a href="$&" target="_blank">$&</a>');
+    text = text.replace(/@([A-Za-z0-9_]{1,15})/gim,'@<a href="http://twitter.com/$1" target="_blank">$1</a>')
+
+    // stip 3 chars off the end and link it to the id, like on twitter.com
+    if (t.truncated == 1) { 
+        debug(t.id); 
+        var newText = text.substring(0,t.text.length-4) 
+            + ' <a href="http://twitter.com/'+u.screen_name+'/status/'+t.id+'" target="_blank" alt="view full tweet">...</a>'        
+        text = newText; 
+    }
+            
+    var postTime = formatTime(t.created_at_unixtime);
+    html = '<div class="tweet" id="tweet-'+t.id+'" onClick="clickTweet('+pos+')" ondblclick="dblClickTweet('+pos+')">'
+        + '<div class="span-1 twMark">&nbsp;</div>' 
+        + '<div class="span-2 twImg"><img src="'+u.profile_image_url+'" height="48" width="48" alt="photo"></div>'
+        + '<div class="span-14 last twInfo"><p class="twText">';
+
+    if (t.read) {
+        html = html + '(read) '; 
+    }
+        
+    html = html + '<a href="http://twitter.com/'+u.screen_name+'" class="posterName" target="_blank">'+u.screen_name+'</a> '+text+'</p>'
+        + '<span class="quiet">'+postTime+' from '+t.source+'</span></div>'
+        + '<div class="span-17 last" style="text-align:right">'
+        + '<ul class="tweet-options">'
+        + '<li><a href="#readClose" onClick="readAndClose()">Close</a></li>'
+        + '<li><a href="#reply" onClick="replyToTweet('+pos+')"><strong>R</strong>eply</a></li>'
+        + '<li><a href="#retweet" onClick="retweet('+pos+')">re<strong>T</strong>weet</a></li>'
+        + '<li><a href="#favorite"><strong>F</strong>avorite</a></li>'
+        //+ '<li><strong>Interesting/Lame</strong></li>'
+        + '</ul>'
+    
+    return html; 
+        
+  // */  
+}
+function formatMini( pos ) { // a minimized display
+    var html = ""; 
+    var t = pageStack[pos]; // the tweet
+    var u = t.user; // the user
+    
+    var postTime = formatTime(t.created_at_unixtime);
+    var text = t.text.substring(0,60)+'...';
+        
+    html = '<div class="tweet" id="tweet-'+t.id+'"  onClick="clickTweet('+pos+')" ondblclick="dblClickTweet('+pos+')">'
+        + '<div class="span-1 twMark">&nbsp;</div>' 
+        + '<div class="span-16 last twInfo quiet"><p>'; 
+    
+    if (t.read) {
+        html = html + '(read) '; 
+    }
+    
+    html = html + '<a href="http://twitter.com/'+u.screen_name+'" class="posterName" target="_blank">'+u.name+'</a> '+text+' '
+        + postTime+' from '+t.source+'</p></div>'
+    return html;
+}
+
+function displayTweet( pos ) {
+    var t = pageStack[pos];
+    
+    // sometimes these don't come from twitter... 
+    if (t.read == undefined) 
+        t.read = 0; 
+    if (t.show == undefined) 
+        t.show = 1;        
+
+    if (t.show == 0) {
+        return formatMini(pos);    
+    } else {
+        return formatFull(pos); 
+    }
+}
+
+function refreshTweet( pos ) {
+    var t = pageStack[pos]; 
+    var html = displayTweet(pos); 
+    var tweet = $('#tweet-'+t.id);
+    tweet.replaceWith(html); 
+}
+
+function setSource(source) {
+    if (source == undefined) 
+        source = 'timeline'; 
+        
+    debug('Setting Source to '+source); 
+    switch (source) {
+        case 'replies': 
+            curSource = {
+                'type'    : 'replies',
+                'data'    : GLOBALS.replies,
+                'render'  : displayReplies
+            }
+            break; 
+        case 'directMessages': 
+            break; 
+        case 'directSent': 
+            break;         
+        case 'timeline':
+        default: 
+            curSource = {
+                'type'    : 'timeline',
+                'data'    : GLOBALS.timeline,
+                'render'  : displayTimeline
+            }
+    }
+    displayPage(1);
+}
+
+function displayPage(page, noFetch) {
+
+    if (!(page >= 1 || page <= 20))
+        return false;
+    
+    curSource.render(page,noFetch);
+    
+    updatePageNavigation();
+    curPage = page;
+    debug("current page: " + curPage);
+    curSelected = 0;
+    scrollToCurrent();
+    addHighlight(curSelected);
+   
+}
+
+function displayReplies(page,noFetch) {
+
+    var start = (page-1) * 20;
+    var end = start+20-1; 
+    var replies = curSource.data;
+    
+    debug("Showing Replies Page: "+page);
+    debug("Timeline Length: " + replies.length);
+    debug("Indexes, start @" + start + ", end @"+end);
+    if (replies[end] == undefined && noFetch != true) {
+        debug('Gotta fetch replies page: '+page);
+        AJAX.getReplies(page);
+        return true; 
+    }
+    
+    // just show the page. 
+    // build pageStack 
+    pageStack = []; // clear it out. 
+    var tweets = []; 
+    for (var i = start; i <= end; i++) {
+        if (replies[i] == undefined)  // may not have 20 items for the page.
+            break;
+        pageStack.push(replies[i]); // ref. to the main objects
+    }
+
+    // display the tweets
+    $('#timeline').empty();
+    for (var i in pageStack) {
+        $('#timeline').append(displayTweet(i)).append('<hr>');
+    }
+}
+
+function displayTimeline(page, noFetch) {
+    var start = (page-1) * 20;
+    var end = start+20-1; 
+    var tl = GLOBALS.timeline; 
+    
+    debug("Showing Timeline Page: "+page);
+    debug("Timeline Length: " + tl.length);
+    debug("Indexes, start @" + start + ", end @"+end);
+    if (tl[end] == undefined && noFetch != true) {
+        debug('Gotta fetch page: '+page);
+        AJAX.getTimeline(page);
+        return true; 
+    }
+    
+    // just show the page. 
+    // build pageStack 
+    pageStack = []; // clear it out. 
+    var tweets = []; 
+    for (var i = start; i <= end; i++) {
+        if (tl[i] == undefined)  // may not have 20 items for the page.
+            break;
+        pageStack.push(tl[i]); // ref. to the main objects
+    }
+
+    // display the tweets
+    $('#timeline').empty();
+    for (var i in pageStack) {
+        $('#timeline').append(displayTweet(i)).append('<hr>');
+    }
+}
+
+function updatePageNavigation() {
+    if (curPage == 1) {
+        $('#pageNumber').html('<h3>Latest Tweets</h3>');
+        $('li[rel=firstPage]').fadeOut('fast');
+        $('li[rel=prevPage]').fadeOut('fast');
+    } else {
+        $('#pageNumber').html('<h3>Page: '+curPage+'</h3>');
+        $('li[rel=firstPage]').fadeIn('fast');
+        $('li[rel=prevPage]').fadeIn('fast');
+    }
+}
+
+// Status update functions 
+function showUpdateForm() {
+    $('html,body').animate({scrollTop: 0}, 100);
+    $('#updateStatusButton').hide();
+    $('#statusUpdateForm').fadeIn('slow');;
+    $('#status').focus();
+    return false; 
+}
+
+function cancelUpdate() {
+    $('#statusUpdateForm').hide();
+    $('#updateStatusButton').show();
+    return false; 
+}
+
+
+

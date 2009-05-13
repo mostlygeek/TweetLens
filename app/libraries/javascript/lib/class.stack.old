@@ -1,0 +1,73 @@
+/* create stacks for managing Status and Direct Message Data
+
+Reference: 
+  http://www.kevlindev.com/tutorials/javascript/inheritance/inheritance10.htm
+  
+Requires that jQuery be available. 
+
+*/ 
+function Stack() {
+    this.data = []; // empty array for holding objects
+}
+Stack.prototype.getStack = function() {
+    return this.data; 
+}
+Stack.prototype.setStack = function(data) {
+    this.data = data; 
+}
+
+Stack.prototype.getStackPage = function(page) {
+    // 20 item / page
+    if (page == undefined) 
+        return [];
+        
+    var start = (page-1)*20; 
+    var end = (page*20)-1;
+
+    if (this.data[start] == undefined) 
+        return []; 
+        
+    return this.data.slice(start,end);
+}
+
+Stack.prototype.updateStack = function(delta) {
+    // adds data into the stack
+    var newData = this.data.concat(delta); // all the items
+    var deDuped = new Array();
+    var temp = new Object(); // for deduping
+    
+    // dedupe the array 
+    for (var i in newData)
+        temp[newData[i].id]=newData[i];
+    for (var i in temp)
+        deDuped.push(temp[i]);
+
+    // sort
+    deDuped.sort(function(a,b){return (a.id-b.id);});
+    this.data = deDuped; 
+}
+/**
+ * 
+ * The Timeline Stack 
+ *
+ * All functionality for managing / getting timeline data
+ *
+ *
+ **/
+
+function Timeline(stack) {
+    this.attr = " an attribute "; 
+}
+Timeline.prototype = new Stack;
+Timeline.prototype.constructor = Timeline; 
+Timeline._parent = Stack.prototype;
+
+
+Timeline.prototype.AJAX = {}; 
+Timeline.prototype.AJAX.loadPage = function (page,callback) {
+    
+    
+}
+Timeline.prototype.testAjax = function() {
+    return typeof this.AJAX; 
+}

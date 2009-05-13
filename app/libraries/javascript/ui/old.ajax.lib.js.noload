@@ -1,0 +1,237 @@
+/* Create an AJAX object to hold all of the 
+   AJAX operations and to keep the name space nice and clean. 
+
+*/
+var AJAX = {
+    updateRateLimit     : updateRateLimit, 
+    
+    // Timeline AJAX functions
+    getTimelineLatest   : getTimelineLatest,
+    getTimeline         : getTimeline,
+    
+    // Replies AJAX functions
+    getReplies          : getReplies,
+    getLatestReplies    : getLatestReplies,
+    
+    // Tweet Read / Show functions 
+    updateShow          : updateShowStatus,
+    updateRead          : updateRead
+    
+};
+
+/*********** THE AJAX FUNCTIONS ***************/
+
+function getLatestReplies() {
+    
+    var r = GLOBALS.replies; 
+
+    if (r[0] == undefined) {
+        return getReplies(1); // get the first page of replies. 
+    }
+    
+    var t = r[0]; // the first one 
+    $.ajax(
+    {
+        type:       'GET',
+        url:        "/webservice/replies.php?sinceid="+t.id,
+        dataType:   'json',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to latest replies: '+textStatus);
+        },
+        success: function (newReplies,textStatus) {
+            debug('(ajax) latest replies loaded.');
+
+            var newArray = newReplies.concat(GLOBALS.replies); 
+            if (newArray.length > 200) {
+                GLOBALS.replies = newArray.slice(0,199); // 200 elements
+            } else {
+                GLOBALS.replies = newArray;
+            }
+            setSource('replies'); 
+            displayPage(1,true);
+        },
+        complete: function(XMLHttpRequest, textStatus) {
+            updateRateLimit();
+            trackAnalytics("/webservice/replies.php?sinceid="+t.id);        
+            AJAX.updateRateLimit(); 
+        }    
+    }
+    
+    ); 
+
+}
+
+function getReplies( page ) {
+    debug("Fetching Replies Page: "+page);
+    $.ajax( 
+    {
+        type:       'GET',
+        url:        "/webservice/replies.php?page="+page,
+        dataType:   'json',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to Load Replies Page: '+page+': '+textStatus);
+        },
+        success: function (data,textStatus) {
+            debug('(ajax) Replies Page '+page+' loaded successfully');
+            // we want to append/replace items if needed (load the whole page)
+            var start = (page-1) * 20;
+            var end = start+20-1;
+            var c = 0; 
+            // put it in the right place in the timeline. 
+            for (var i = start; i <= end; i++) {
+                GLOBALS.replies[i] = data[c];
+                c++;
+            }
+            displayPage(page,true);
+        },
+        complete: function(XMLHttpRequest, textStatus) {
+            trackAnalytics("/webservice/replies.php?page="+page);
+            AJAX.updateRateLimit(); 
+        }
+    });         
+}
+
+function getTimeline( page ) {
+    debug("Fetching Page: "+page);
+    $.ajax( 
+    {
+        type:       'GET',
+        url:        "/webservice/getPage.php?page="+page,
+        dataType:   'json',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to Load Page: '+page+': '+textStatus);
+        },
+        success: function (data,textStatus) {
+            debug('(ajax) Page '+page+' loaded successfully from ajax');
+            // we want to append/replace items if needed (load the whole page)
+            var start = (page-1) * 20;
+            var end = start+20-1;
+            var c = 0; 
+            // put it in the right place in the timeline. 
+            for (var i = start; i <= end; i++) {
+                GLOBALS.timeline[i] = data[c];
+                c++;
+            }
+            displayPage(page,true);
+        },
+        complete: function(XMLHttpRequest, textStatus) {
+            trackAnalytics("/webservice/getPage.php?page="+page);
+            AJAX.updateRateLimit();
+        }
+    });     
+}
+
+function getTimelineLatest() {
+    var t = GLOBALS.timers.timeline; // easier to work with
+    t.timeout = 120; // reset the timeout. 
+    t.paused = false; 
+    debug('fetching latest tweets');
+    
+    $.ajax( 
+    {
+        type:       'GET',
+        url:        "/webservice/getLatest.php",
+        dataType:   'json',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to latest Tweets: '+textStatus);
+        },
+        success: function (newTweets,textStatus) {
+            debug('(ajax) Latest tweets successfully loaded');
+
+            if (newTweets.length == 0)  {
+                debug('No new tweets to add');
+                return false; 
+            }
+                
+            var newArray = newTweets.concat(GLOBALS.timeline); 
+            if (newArray.length > 200) {
+                GLOBALS.timeline = newArray.slice(0,199); // 200 elements
+            } else {
+                GLOBALS.timeline = newArray;
+            }
+            displayPage(1);
+        },
+        complete: function(XMLHttpRequest, textStatus) {
+            trackAnalytics("/webservice/getLatest.php");
+            AJAX.updateRateLimit(); 
+        }
+    }); 
+}
+
+function updateRead( t ) {
+
+    if (t == undefined ) 
+        t = pageStack[curSelected];
+        
+    if (t.read == true) {
+        return false; 
+    }
+    
+    $.ajax( 
+    {
+        type:       'POST',
+        url:        "/webservice/read.php",
+        data:       { twId : t.id },
+        dataType:   'text',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to mark as read: '+textStatus);
+        },
+        success: function (data,textStatus) {
+            trackAnalytics("/webservice/read.php");
+            debug('(ajax) Tweet '+t.id+' marked as read.');
+        }
+    }); 
+    t.read = true; 
+    return true; 
+}
+
+function updateShowStatus( t ) {
+// does an ajax call to update the Tweet's show status. 
+    
+    $.ajax( 
+    {
+        type:       'POST',
+        url:        "/webservice/show.php",
+        data:       { twId : t.id, show : t.show },
+        dataType:   'text',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to mark show: '+textStatus);
+        },
+        success: function (data,textStatus) {
+            trackAnalytics("/webservice/show.php");
+            debug('(ajax) Tweet '+t.id+' show/hide updated');
+        }
+    }); 
+    t.show = 1; 
+    return true; 
+}
+
+function updateRateLimit() {
+    debug('Updating Rate Limit');
+    $.ajax( 
+    {
+        type:       'GET',
+        url:        "/webservice/ratelimit.php",
+        dataType:   'text',
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            debug('(ajax) Failed to get rate limit: '+textStatus);
+        },
+        success: function (data,textStatus) {
+            debug('Got Rate Limit'+data);
+            trackAnalytics("/webservice/ratelimit.php");
+            $('#apilimit').text('API Limit: '+data+'/100');
+        }
+    }); 
+}
+
+function trackAnalytics(path) {
+    try {
+        // pageTracker should already be defined
+        pageTracker._trackPageview(path);
+        debug('Tracking: '+path);
+    } catch(err) {
+        debug('Error Tracking, maybe adblocked');
+    }        
+
+}
+

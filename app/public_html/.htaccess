@@ -1,0 +1,2 @@
+ErrorDocument 404 /_handle404.php
+SetEnv TWEETLENS_VERSION_ID rev-227

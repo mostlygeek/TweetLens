@@ -1,0 +1,88 @@
+function readAndClose() {
+    AJAX.updateRead();
+    hideCurrent();
+    scrollToCurrent();
+    moveSelect(1); // try to go down
+    addHighlight(curSelected);
+}
+
+function replyToTweet( pos ) {
+    
+    if ( pos == undefined ) {    
+        pos = curSelected;
+    }
+        
+    var tweet = pageStack[pos];     
+
+    AJAX.updateRead(tweet);
+    refreshTweet(pos);
+    
+    // tell the status update form to do a reply 
+    $('#formStatusUpdate *').trigger('REPLY',tweet);
+
+}
+
+function retweet( pos ) {
+    if ( pos == undefined ) {    
+        pos = curSelected;
+    }
+        
+    var t = pageStack[pos];     
+    var u = t.user; 
+
+    AJAX.updateRead(t);
+    refreshTweet(pos);
+    $('#formStatusUpdate *').trigger('RETWEET',t);
+
+}
+
+
+function hideCurrent() {
+    var t = pageStack[curSelected];
+    if (t.show == 1) {
+        t.show = 0;
+        AJAX.updateShow(t);
+        refreshTweet(curSelected);
+    }
+}
+
+function toggleShow() { // flips between full / mini show mode 
+    var t = pageStack[curSelected];
+    if (t.show) {
+        t.show = 0;
+    } else {
+        t.show = 1; 
+    }
+    AJAX.updateShow(t);
+    refreshTweet(curSelected);
+    addHighlight(curSelected);
+}
+
+
+/************* TIMELINE UPDATE FUNCTIONS ***********************/
+function timelineCounter() { // run every second.. 
+
+    var now = Math.round(new Date().getTime()/1000);    
+    var t = GLOBALS.timers.timeline;
+
+    if (t.paused == true)  {
+        $('#updateTime').html('<a href="#pause" onClick="return toggleTimelineCounter();">resume</a>, <a href="#now" onClick="AJAX.getTimelineLatest()">get now</a>');
+        return true; 
+    }
+    if (t.timeout == 0) {
+        $('#updateTime').html("updating now"); 
+        AJAX.getTimelineLatest();
+        return true; 
+    } else {
+        $('#updateTime').html(t.timeout + ' secs, <a href="#pause" onClick="return toggleTimelineCounter();">pause</a>'); 
+        t.timeout--; 
+        return true; 
+    }
+}
+
+function toggleTimelineCounter() {
+    var t = GLOBALS.timers.timeline;
+    t.paused = (! t.paused);
+    return timelineCounter();
+}
+

@@ -1,0 +1,231 @@
+/**************************************/
+/*              GLOBALS               */
+/**************************************/
+div.right {
+    text-align: right;
+}
+/**************************************/
+/*        STATUS/MESSAGE FORM         */
+/**************************************/
+span.statusHeader {
+    font-size: 1.7em;
+}
+
+/**************************************/
+/*      STACK DISPLAY OPTIONS MENU    */
+/**************************************/
+div.stack-menu {
+    margin-top: 0.2em; 
+    margin-bottom: 0.5em;
+}
+div.stack-menu a {
+    text-decoration: underline; color: #3300FF;
+}
+ul.stackOptions {
+    margin: 0.5em 0.25em 0.5em 0.25em; 
+    display: none;
+}
+ul.stackOptions li {
+    display: inline;
+    list-style-type: none; 
+    margin-left: 1em;
+    border: solid 1px #CFCFCF; 
+    margin: 0.25em;
+    padding: 0.35em;
+    padding-left: 1em;
+    padding-right: 1em;    
+}
+
+ul.pageNav {
+    float: right; 
+    margin: 0.5em 0.25em 0.5em 0.25em; 
+    display: none;
+}
+ul.pageNav li {
+    border: solid 1px #CFCFCF; 
+    display: inline;
+    list-style-type: none; 
+    margin: 0.25em;
+    margin-left: 1em;
+    padding: 0.35em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+/**************************************/
+/*        STACK ITEM OPTIONS          */
+/**************************************/
+div.stackItem {
+    margin: 0px;
+    margin-bottom: 2px; 
+    padding: 0px;
+    padding-top: 2px;      
+    border-top: 2px dotted #C0C0C0;
+    background-color: white;
+    clear: both;
+}
+div.replyTarget {
+    margin-left: 1.5em;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+div.lastItem {
+    border-bottom: 2px dotted #C0C0C0;
+}
+img.twitpic {
+    width: 55px;
+    height: 55px;
+    float: right;
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+
+img.profilepic {
+    float: left;
+    width: 32px; 
+    height: 32px;
+    margin: 0px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+p.stackText {
+    margin: 0em; 
+    margin-left: 40px;
+    padding-right: 5px;
+}
+
+ul.itemOptions {
+    margin: 0px;
+    margin-left; -5px;     
+    padding: 0px;
+    padding-right: 1em;
+    text-align: left;  
+    background-color: #EEEEEE;
+}
+ul.itemOptions li {
+    display: inline; 
+}
+
+button.inline {
+    float: none;
+    display: inline;
+}
+
+/* Inline Reply Styles */
+#inlineReply {
+    margin-top: 5px; 
+}
+#replyText {
+    font-size: 1.20em;
+}
+div.inline {
+    margin: 0px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+p.inline {
+    margin: 0px;
+}
+/* Different states a stack item can be in */ 
+div.stackItemSelected {
+    border-top: 2px solid black;
+    border-bottom: 2px solid black;
+    margin-bottom: 0px;
+}
+div.stackItemMouseOver {
+    background-color: #FFFFCC;
+}
+div.stackItemFavorited {
+    background-image: url('/css/images/favorited.png'); 
+    background-repeat: no-repeat; 
+    background-position: top right;    
+}
+div.vote-like {
+    background-color: #33FF99; 
+}
+
+div.vote-lame {
+    background-color: #FF99FF; 
+}
+
+
+/**** Right Side Menu ****/
+#stackMenu  li a {
+    text-decoration: underline; color: #36c;
+}
+#hotkey-list li {
+    list-style-type: none; 
+}
+span.hotkey {
+  font-variant: small-caps; 
+  font-weight:bold;
+
+}
+
+/** TOOL TIPS **/
+.tooltipLink {
+    font-size: 1.2em;
+}
+
+/** STATUS UPDATE FORM **/ 
+#saveSearch {
+    display: none;
+}
+#form-working {
+    float: right;
+    display: none;
+}
+#formStatusUpdate textarea {
+    width: 660px;
+    height: 65px;
+    font-size: 1.20em;
+    margin-bottom: 5px;
+}
+#formStatusUpdate div {
+    margin-bottom: 0px; 
+}
+#dmRecipient {
+    display: none; 
+}
+
+
+#ajaxWatch {
+    opacity: 0.75; 
+    background-color: #FFFFFF;
+    position: fixed; 
+    left: 0px; 
+    top: 0px; 
+    z-index: 8; 
+    overflow: auto; 
+    color: red; 
+    font-weight: bold; 
+    font-size: 1.0em;
+    display: none; 
+    padding: 4px;
+    border-right: 2px solid red; 
+    border-bottom: 2px solid red; 
+}
+/** Debug Quake console style **/
+#debugView {
+    background-color: #EEEEEE;
+    opacity: 0.90; 
+    position: fixed; 
+    left: 0px; 
+    top: 0px; 
+    z-index: 10; 
+    padding: 2em; 
+    width: 95%;
+    height: 80%; 
+    overflow: auto; 
+    border: 2px solid #C0C0C0;
+    display: none; 
+}
+#debugView * {
+    opacity: 1.0;
+}
+
+/**************************************/
+/*               FOOTER               */
+/**************************************/
+
+
