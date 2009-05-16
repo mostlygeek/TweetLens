@@ -1,14 +1,18 @@
 <?php
 /* this file contains all the settings for your installation. 
-   tweet as necessary */
+   tweet as necessary 
+   
+   Copy this file to settings.php as config.php requires it.
+   */
 
 // MySQL Information
-$config['db'] = array (
+$_config['db'] = array (
     'host'  => 'localhost',
     'user'  => 'username',
-    'pass'  => 'password'
+    'pass'  => 'password',
+    'name'  => 'dbname'
 ); 
-$config['mc'] = array ( // memcache
+$_config['mc'] = array ( // memcache
     'host' => 'localhost',
     'port' => 11211
 ); 
