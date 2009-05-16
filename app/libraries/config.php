@@ -1,6 +1,4 @@
 <?php
-require_once('../settings.php'); // pull in the installation specific settings
-
 /* These are apache ENV variables for controlling the application 
    mode */
 if (!isset($_SERVER['TWEETLENS_APP_MODE']))
@@ -33,6 +31,7 @@ function __autoload($class) {
 }
 
 // include all the standard libraries
+require_once(LIB_DIR.'../settings.php');
 require_once('memcache.lib.php'); 
 require_once('database.lib.php');
 require_once('session.lib.php');

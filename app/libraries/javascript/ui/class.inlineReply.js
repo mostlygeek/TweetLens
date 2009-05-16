@@ -28,7 +28,7 @@ init.add('class.inlineReply.js INIT',function() {
         }
     });
     $('#inlineCancel').live('click',function(e) {
-        e.stopImmedatePropagation();
+        e.stopImmediatePropagation();
         $(document).trigger('REMOVE_INLINE_REPLIES');
     });     
     $('#replyText').live('keyup',function(e) {
