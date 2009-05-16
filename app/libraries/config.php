@@ -1,4 +1,8 @@
 <?php
+require_once('../settings.php'); // pull in the installation specific settings
+
+/* These are apache ENV variables for controlling the application 
+   mode */
 if (!isset($_SERVER['TWEETLENS_APP_MODE']))
     die('TWEETLENS_APP_MODE not defined'); 
 
